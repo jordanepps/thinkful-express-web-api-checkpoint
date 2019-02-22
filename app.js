@@ -22,11 +22,11 @@ app.get('/cipher', (req, res) => {
 		.split('')
 		.map(letter => {
 			const charCode = letter.charCodeAt(0);
-			// const boundaries = {
-			// 	base: letter === letter.toUpperCase() ? 65 : 97,
-			// 	ceil: letter === letter.toUpperCase() ? 90 : 122
-			// };
-			const boundaries = getBoundaries(charCode);
+			const boundaries = {
+				base: letter === letter.toUpperCase() ? 65 : 97,
+				ceil: letter === letter.toUpperCase() ? 90 : 122
+			};
+			// const boundaries = getBoundaries(charCode);
 			if (charCode >= boundaries.base && charCode <= boundaries.ceil) {
 				const newShift = (charCode + numShift - boundaries.base) % 26;
 				return String.fromCharCode(boundaries.base + newShift);
@@ -36,23 +36,72 @@ app.get('/cipher', (req, res) => {
 	res.send(textArr);
 });
 
-function getBoundaries(charCode) {
-	let base;
-	let ceil;
-	if (charCode >= 65 && charCode <= 90) {
-		base = 65;
-		ceil = 90;
+// function getBoundaries(charCode) {
+// 	let base;
+// 	let ceil;
+// 	if (charCode >= 65 && charCode <= 90) {
+// 		base = 65;
+// 		ceil = 90;
+// 	}
+// 	if (charCode >= 97 && charCode <= 122) {
+// 		base = 97;
+// 		ceil = 122;
+// 	}
+// 	return { base, ceil };
+// }
+
+app.get('/lotto', (req, res) => {
+	const userNumbers = req.query.numbers.map(number => Number(number));
+	const dupilcateNum = findDuplicates(userNumbers);
+	const randomNumbers = [];
+	while (randomNumbers.length < 6) {
+		const number = RandomNumber0to20();
+		if (randomNumbers.indexOf(number) === -1) randomNumbers.push(number);
 	}
-	if (charCode >= 97 && charCode <= 122) {
-		base = 97;
-		ceil = 122;
+	if (userNumbers.length !== 6 || !userNumbers.every(isValidNumber))
+		return res.status(400).send('Please only provide 6 numbers');
+	if (dupilcateNum.length > 0)
+		return res.status(400).send('Please provide 6 distinct numbers');
+	const matchedNumbers = [];
+	userNumbers.forEach(number => {
+		if (randomNumbers.indexOf(number) !== -1) matchedNumbers.push(number);
+	});
+	switch (matchedNumbers.length) {
+		// case 0:
+		// case 1:
+		// case 2:
+		// case 3:
+		// 	res.send('Sorry, you lose');
+		// 	break;
+		case 4:
+			res.send('Congratulations, you win a free ticket');
+			break;
+		case 5:
+			res.send('Congratulations, you win a free ticket');
+			break;
+		case 6:
+			res.send('Wow! Unbelievable! You could have won the mega millions!');
+			break;
+		default:
+			res.send('Sorry, you lose');
+			break;
 	}
-	return { base, ceil };
+	console.log(randomNumbers);
+	console.log(matchedNumbers);
+	// res.send(userNumbers);
+});
+
+function isValidNumber(number) {
+	return !isNaN(number);
 }
 
-// app.get('/lotto', (req, res)=>{
+function RandomNumber0to20() {
+	return Math.floor(Math.random() * 20);
+}
 
-// })
+function findDuplicates(arr) {
+	return arr.filter((item, index) => arr.indexOf(item) != index);
+}
 
 app.listen(8000, () => {
 	console.log('Listening on port 8000.');
