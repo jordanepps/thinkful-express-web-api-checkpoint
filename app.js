@@ -53,26 +53,13 @@ app.get('/cipher', (req, res) => {
 app.get('/lotto', (req, res) => {
 	const userNumbers = req.query.numbers.map(number => Number(number));
 	const dupilcateNum = findDuplicates(userNumbers);
-	const randomNumbers = [];
-	while (randomNumbers.length < 6) {
-		const number = RandomNumber0to20();
-		if (randomNumbers.indexOf(number) === -1) randomNumbers.push(number);
-	}
+	const randomNumbers = makeRandomNumArr();
 	if (userNumbers.length !== 6 || !userNumbers.every(isValidNumber))
 		return res.status(400).send('Please only provide 6 numbers');
 	if (dupilcateNum.length > 0)
 		return res.status(400).send('Please provide 6 distinct numbers');
-	const matchedNumbers = [];
-	userNumbers.forEach(number => {
-		if (randomNumbers.indexOf(number) !== -1) matchedNumbers.push(number);
-	});
+	const matchedNumbers = findMatchingNumbers(userNumbers, randomNumbers);
 	switch (matchedNumbers.length) {
-		// case 0:
-		// case 1:
-		// case 2:
-		// case 3:
-		// 	res.send('Sorry, you lose');
-		// 	break;
 		case 4:
 			res.send('Congratulations, you win a free ticket');
 			break;
@@ -86,16 +73,30 @@ app.get('/lotto', (req, res) => {
 			res.send('Sorry, you lose');
 			break;
 	}
-	console.log(randomNumbers);
-	console.log(matchedNumbers);
-	// res.send(userNumbers);
 });
 
 function isValidNumber(number) {
 	return !isNaN(number);
 }
 
-function RandomNumber0to20() {
+function findMatchingNumbers(userArr, randomArr) {
+	const arr = [];
+	userArr.forEach(number => {
+		if (randomArr.indexOf(number) !== -1) arr.push(number);
+	});
+	return arr;
+}
+
+function makeRandomNumArr() {
+	const arr = [];
+	while (arr.length < 6) {
+		const number = makeRandomNumber0to20();
+		if (arr.indexOf(number) === -1) arr.push(number);
+	}
+	return arr;
+}
+
+function makeRandomNumber0to20() {
 	return Math.floor(Math.random() * 20);
 }
 
